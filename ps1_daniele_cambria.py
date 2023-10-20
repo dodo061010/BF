@@ -30,7 +30,7 @@ fig, axes = plt.subplots(nrows=5, ncols=2, figsize=(15, 20))
 axes = axes.ravel()
 
 for i in range(10):
-    cumulative_sum = dice_df.iloc[:, :i+1].sum(axis=1)
+    cumulative_sum = dice_df.iloc[:, : i + 1].sum(axis=1)
     bin_edges = np.arange(cumulative_sum.min() - 0.5, cumulative_sum.max() + 1.5)
     axes[i].hist(cumulative_sum, bins=bin_edges, density=True, alpha=0.7, edgecolor="k")
     axes[i].set_title(f"Histogram of $X_1 + \ldots + X_{i+1}$")
@@ -48,7 +48,7 @@ fig, axes = plt.subplots(nrows=5, ncols=2, figsize=(15, 20))
 axes = axes.ravel()
 
 for i in range(10):
-    cumulative_sum = normal_df.iloc[:, :i+1].sum(axis=1)
+    cumulative_sum = normal_df.iloc[:, : i + 1].sum(axis=1)
     axes[i].hist(cumulative_sum, bins=50, density=True, alpha=0.7, edgecolor="k")
     axes[i].set_title(f"Histogram of Normal $X_1 + \ldots + X_{i+1}$")
 
@@ -66,7 +66,9 @@ weight_1, weight_2 = 0.5, 0.5  # Portfolio weights
 
 # Portfolio mean and standard deviation
 portfolio_mean = weight_1 * mean_1 + weight_2 * mean_2
-portfolio_variance = (weight_1**2 * std_1**2) + (weight_2**2 * std_2**2)  # Since assets are uncorrelated
+portfolio_variance = (weight_1**2 * std_1**2) + (
+    weight_2**2 * std_2**2
+)  # Since assets are uncorrelated
 portfolio_std = np.sqrt(portfolio_variance)
 
 # Probability of negative return
@@ -78,7 +80,9 @@ z_score_5th_percentile = -1.64
 # Calculate VaR using the provided z-score
 VaR_5th_percentile = portfolio_mean + z_score_5th_percentile * portfolio_std
 
-print(f"Probability of negative return: {probability_negative_return}, Value at Risk at the 5th percentile: {VaR_5th_percentile}")
+print(
+    f"Probability of negative return: {probability_negative_return}, Value at Risk at the 5th percentile: {VaR_5th_percentile}"
+)
 
 # ======================= 6 =======================
 
@@ -99,10 +103,10 @@ sorted_data = np.sort(data)
 percentile_ranks = np.arange(1, len(data) + 1) / len(data)
 
 plt.figure(figsize=(10, 6))
-plt.plot(sorted_data, percentile_ranks, marker='.', linestyle='none')
+plt.plot(sorted_data, percentile_ranks, marker=".", linestyle="none")
 plt.title("Empirical CDF of Simulated Data")
 plt.xlabel("Value")
 plt.ylabel("Percentile Rank")
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+plt.grid(True, which="both", linestyle="--", linewidth=0.5)
 plt.savefig("./plots/empirical_cdf.png")
 plt.show()
