@@ -72,9 +72,6 @@ def investment_earnings(df):
         ):
             prev_weight_p1 = df.loc[i, "Weight P1"]
             prev_weight_p2 = df.loc[i, "Weight P2"]
-        elif df.loc[i, "Weight P1"] == 0 and df.loc[i, "Weight P2"] == 0:
-            prev_weight_p1 = None
-            prev_weight_p2 = None
 
     # Calculate cumulative earnings
     total_earnings = df["Total Daily Earnings"].sum()
@@ -98,11 +95,9 @@ for comp in data:
 
     df["True Ratio"] = df["P1"] / df["P2"]
 
-    data[comp] = determine_investment_strategy(df)
-    filename = f"data/{comp}.csv"
-    df.to_csv(filename, index=False)
-
+    data[comp] = determine_investment_strategy(df) 
     data[comp], earnings_dict[comp] = investment_earnings(data[comp])
+
     filename = f"data/{comp}_inv.csv"
     df.to_csv(filename, index=False)
 
