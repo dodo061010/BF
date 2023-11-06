@@ -287,10 +287,9 @@ class Gps1:
         df_fund_returns = pd.DataFrame(fund_returns).T
 
         if len(periods) == 2:
+            self.plot_two_periods(df_fund_returns, periods)
             if superior_fund:
                 self.plot_two_periods(df_fund_returns, periods, superior_fund)
-            else:
-                self.plot_two_periods(df_fund_returns, periods)
 
             # Identify any "star" fund that outperforms the market in both periods
             star_fund = df_fund_returns[
