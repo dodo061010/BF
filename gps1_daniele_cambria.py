@@ -135,6 +135,7 @@ class Gps1:
                 self.df_combined[combo[0]] * self.df_combined[combo[1]]
             )
             interaction_terms.append(interaction_name)
+        
 
         all_vars = self.firm_characteristics + interaction_terms
 
@@ -154,6 +155,8 @@ class Gps1:
             ],
             axis=0,
         )
+        # Uncomment if you want to see all predictors
+        # print(statistically_significant_predictors)
 
         # Sort p-values and get top predictors
         top_3_predictors = statistically_significant_predictors.sort_values(
@@ -224,10 +227,10 @@ class Gps1:
 
         if superior_fund:
             plt.savefig(
-                f"data/mutual_fund_performance_t{periods[0]}_t{periods[1]}_superior.png"
+                f"plots/mutual_fund_performance_t{periods[0]}_t{periods[1]}_superior.png"
             )
         else:
-            plt.savefig(f"data/mutual_fund_performance_t{periods[0]}_t{periods[1]}.png")
+            plt.savefig(f"plots/mutual_fund_performance_t{periods[0]}_t{periods[1]}.png")
     
     def plot_one_period(self, df_fund_returns, period: int, funds_to_highlight: list = None):
         plt.figure(figsize=(15, 9))
@@ -255,7 +258,7 @@ class Gps1:
         plt.ylabel("Annual Return")
         plt.legend()
 
-        plt.savefig(f"data/mutual_fund_performance_t{period}.png")
+        plt.savefig(f"plots/mutual_fund_performance_t{period}.png")
 
 
     def plot_mutual_funds(self, periods: list, funds_to_highlight: list = None, superior_fund: str = None):
@@ -280,7 +283,8 @@ class Gps1:
 
         if len(periods) == 2:
             self.plot_two_periods(df_fund_returns, periods)
-            self.plot_two_periods(df_fund_returns, periods, superior_fund)
+            if superior_fund:
+                self.plot_two_periods(df_fund_returns, periods, superior_fund)
 
             # Identify any "star" fund that outperforms the market in both periods
             star_fund = df_fund_returns[
