@@ -1,4 +1,3 @@
-import re
 from itertools import combinations
 
 import matplotlib.pyplot as plt
@@ -8,11 +7,16 @@ import statsmodels.api as sm
 
 
 class Gps1:
-    def __init__(self, num_companies: int, num_years: int, mean_return: float, std_dev_return: float):
-        # Set random seed for reproducibility
-        np.random.seed(22737928)
+    def __init__(
+        self,
+        num_companies: int,
+        num_years: int,
+        mean_return: float,
+        std_dev_return: float,
+        seed: int = 22737928,
+    ):
+        np.random.seed(seed)
 
-        # Parameters for returns
         self.num_companies = num_companies
         self.num_years = num_years
         self.mean_return = mean_return
@@ -26,7 +30,6 @@ class Gps1:
             self.returns, columns=[f"year_{i+1}" for i in range(num_years)]
         )
 
-        # Generate firm characteristics
         self.ceo_female = np.random.choice([0, 1], size=self.num_companies)
         self.ceo_children = np.random.choice([0, 1, 2, 3], size=self.num_companies)
         self.ceo_age = np.random.uniform(40, 65, size=self.num_companies)
@@ -37,9 +40,8 @@ class Gps1:
         self.employees_avg_age = np.random.normal(40, 12, size=self.num_companies)
         self.firm_sector = np.random.choice(
             range(1, 9), size=self.num_companies
-        )  # 1 to 8
+        ) 
 
-        # Create a DataFrame to store firm characteristics
         self.df_firm_characteristics = pd.DataFrame(
             {
                 "ceo_female": self.ceo_female,
@@ -71,7 +73,7 @@ class Gps1:
         )
 
     def run_regression_for_selected_sectors(
-        self, df: pd.DataFrame, sectors: list, dependent_var, independent_vars
+        self, df: pd.DataFrame, sectors: list, dependent_var: str, independent_vars: list
     ) -> sm.regression.linear_model.RegressionResultsWrapper:
         # Filter the DataFrame for the selected sectors
         sector_df = df[df["firm_sector"].isin(sectors)]
@@ -80,7 +82,7 @@ class Gps1:
         model = sm.OLS(y, X).fit()
         return model
 
-    def run_all_regressions(self, dependent_var, independent_vars) -> dict:
+    def run_all_regressions(self, dependent_var: str, independent_vars: list) -> dict:
         model_dict = {}
 
         # All sectors
@@ -99,7 +101,7 @@ class Gps1:
 
         return model_dict
 
-    def find_statistically_significant_predictors(self, model) -> pd.DataFrame:
+    def find_statistically_significant_predictors(self, model: sm.regression.linear_model.RegressionResultsWrapper) -> pd.DataFrame:
         statistically_significant_predictors = pd.DataFrame()
 
         for sector, model in model.items():
@@ -120,7 +122,7 @@ class Gps1:
 
         return statistically_significant_predictors
 
-    def find_top_3_predictors(self, period) -> pd.DataFrame:
+    def find_top_3_predictors(self, period: int) -> pd.DataFrame:
         year = f"year_{period}"
 
         models_without_interactions = self.run_all_regressions(
@@ -135,7 +137,6 @@ class Gps1:
                 self.df_combined[combo[0]] * self.df_combined[combo[1]]
             )
             interaction_terms.append(interaction_name)
-        
 
         all_vars = self.firm_characteristics + interaction_terms
 
@@ -230,9 +231,13 @@ class Gps1:
                 f"plots/mutual_fund_performance_t{periods[0]}_t{periods[1]}_superior.png"
             )
         else:
-            plt.savefig(f"plots/mutual_fund_performance_t{periods[0]}_t{periods[1]}.png")
-    
-    def plot_one_period(self, df_fund_returns, period: int, funds_to_highlight: list = None):
+            plt.savefig(
+                f"plots/mutual_fund_performance_t{periods[0]}_t{periods[1]}.png"
+            )
+
+    def plot_one_period(
+        self, df_fund_returns: pd.DataFrame, period: int, funds_to_highlight: list = None
+    ):
         plt.figure(figsize=(15, 9))
         # Plot sorted returns
         sorted_returns = df_fund_returns[f"mean_return_t{period}"].sort_values()
@@ -240,19 +245,18 @@ class Gps1:
             kind="bar", color=(sorted_returns > 0).map({True: "g", False: "r"})
         )
 
-        # Get the positions of the funds to highlight after sorting
-        highlight_positions = [
-            sorted_returns.index.get_loc(f"{num}") for num in funds_to_highlight
-        ]
+        if funds_to_highlight:
+            # Get the positions of the funds to highlight after sorting
+            highlight_positions = [
+                sorted_returns.index.get_loc(f"{num}") for num in funds_to_highlight
+            ]
 
-        # Highlight the bars for the specified funds
-        for pos in highlight_positions:
-            plt.gca().get_children()[pos].set_color("orange")
+            # Highlight the bars for the specified funds
+            for pos in highlight_positions:
+                plt.gca().get_children()[pos].set_color("orange")
 
         # Add other plot elements and save the figure
-        plt.axhline(
-            y=0.07, color="blue", linestyle="--", label="Market Average Return"
-        )
+        plt.axhline(y=0.07, color="blue", linestyle="--", label="Market Average Return")
         plt.title(f"Annual Returns for {len(sorted_returns)} Mutual Funds")
         plt.xlabel("Mutual Fund")
         plt.ylabel("Annual Return")
@@ -260,8 +264,9 @@ class Gps1:
 
         plt.savefig(f"plots/mutual_fund_performance_t{period}.png")
 
-
-    def plot_mutual_funds(self, periods: list, funds_to_highlight: list = None, superior_fund: str = None):
+    def plot_mutual_funds(
+        self, periods: list, funds_to_highlight: list = None, superior_fund: str = None
+    ) -> list:
         # Assign firms to mutual funds by slicing the DataFrame into chunks of 50 firms each
         funds = {
             f"Fund {i+1}": self.df_combined.iloc[i * 50 : (i + 1) * 50, :]
@@ -282,9 +287,10 @@ class Gps1:
         df_fund_returns = pd.DataFrame(fund_returns).T
 
         if len(periods) == 2:
-            self.plot_two_periods(df_fund_returns, periods)
             if superior_fund:
                 self.plot_two_periods(df_fund_returns, periods, superior_fund)
+            else:
+                self.plot_two_periods(df_fund_returns, periods)
 
             # Identify any "star" fund that outperforms the market in both periods
             star_fund = df_fund_returns[
@@ -297,20 +303,23 @@ class Gps1:
         elif len(periods) == 1:
             self.plot_one_period(df_fund_returns, periods[0], funds_to_highlight)
 
+
 def main():
     gps1 = Gps1(2000, 3, 0.07, 0.2)
 
     # Exercise a - Predicting Returns
-    top_3_predictors_year_1 = gps1.find_top_3_predictors(period = 1)
+    top_3_predictors_year_1 = gps1.find_top_3_predictors(period=1)
     print(top_3_predictors_year_1)
+    print()
 
     # Exercise b, c - Mutual Fund Performance
-    star_funds = gps1.plot_mutual_funds(periods = [1, 2], superior_fund = "Fund 1")
+    star_funds = gps1.plot_mutual_funds(periods=[1, 2], superior_fund="Fund 1")
     print(star_funds)
+    print()
 
     # Exercise d - Are the findings robust?
-    gps1.plot_mutual_funds(periods = [3], funds_to_highlight = star_funds)
-    top_3_predictors_year_3 = gps1.find_top_3_predictors(period = 3)
+    gps1.plot_mutual_funds(periods=[3], funds_to_highlight=star_funds)
+    top_3_predictors_year_3 = gps1.find_top_3_predictors(period=3)
 
     print(top_3_predictors_year_3)
 
